@@ -317,8 +317,9 @@ class _ChangeCalculatorPageState extends State<ChangeCalculatorPage> {
   void calculateChange() {
     try {
       double totalValue = double.tryParse(_changeController.text) ?? 0;
-      int nickels = totalValue ~/ 0.05;
-      int pennies = ((totalValue - (0.05 * nickels)) * 100).toInt();
+      int totalCents = (totalValue * 100).toInt();
+      int nickels = totalCents ~/ 5;
+      int pennies = totalCents % 5;
       setState(() {
         _result =
             'We make change for \$${_changeController.text} with $nickels nickels and $pennies pennies!';
