@@ -17,12 +17,12 @@ This repository contains a Flutter app that works with a public accessible Fusio
 The root of this project directory (next to this README) are two files [a Docker compose file](./docker-compose.yml) and an [environment variables configuration file](./.env). Assuming you have Docker installed on your machine, you can stand up FusionAuth on your machine with:
 
 ```
-docker-compose up -d
+docker compose up -d
 ```
 
 The FusionAuth configuration files also make use of a unique feature of FusionAuth, called [Kickstart](https://fusionauth.io/docs/v1/tech/installation-guide/kickstart): when FusionAuth comes up for the first time, it will look at the [Kickstart file](./kickstart/kickstart.json) and mimic API calls to configure FusionAuth for use when it is first run. 
 
-> **NOTE**: If you ever want to reset the FusionAuth system, delete the volumes created by docker-compose by executing `docker-compose down -v`. 
+> **NOTE**: If you ever want to reset the FusionAuth system, delete the volumes created by docker-compose by executing `docker compose down -v`. 
 
 FusionAuth will be initially configured with these settings:
 
@@ -68,3 +68,12 @@ Visit https://fusionauth.io/docs/quickstarts/quickstart-flutter-native for a ste
 * I get `Error retrieving discovery document: A server with the specified hostname could not be found` when I click the Login button
 
 Ensure FusionAuth is running on a publicly accessible URL and that the `FUSIONAUTH_DOMAIN` variable in `main.dart` is set to the correct URL of your FusionAuth inastance.
+
+
+* I get `Resolving dependencies... Because flutterdemo requires SDK version >=3.0.0 <4.0.0, version solving failed.`
+
+Ensure the dart version is greater than 3.0.0 by running 
+
+```
+flutter upgrade
+```
