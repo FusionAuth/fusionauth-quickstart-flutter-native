@@ -14,7 +14,7 @@ const FlutterSecureStorage secureStorage = FlutterSecureStorage();
 /// specify a local IP address (if the device is connected to the same network
 /// as the computer running FusionAuth) or even use ngrok to expose your
 /// instance to the Internet temporarily.
-const String FUSIONAUTH_DOMAIN = 'your-fusionauth-public-url';
+const String FUSIONAUTH_DOMAIN = 'your-fusionauth-public-url-without-scheme';
 const String FUSIONAUTH_SCHEME = 'https';
 const String FUSIONAUTH_CLIENT_ID = 'e9fdb985-9173-4e01-9d73-ac2d60d1dc8e';
 const String FUSIONAUTH_REDIRECT_URI =
@@ -51,13 +51,17 @@ class MyAppState extends State<MyApp> {
     return MaterialApp(
       title: 'FusionAuth on Flutter',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(primaryColor: const Color(0xFF085b21)),
+      theme: ThemeData(
+          primaryColor: const Color(0xFF085b21),
+          bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+            selectedItemColor: Color(0xFF085b21),
+          )),
       home: Scaffold(
         body: Center(
           child: isBusy
               ? const CircularProgressIndicator()
               : isLoggedIn
-                  ? ChangeCalculatorPage(logoutAction, email)
+                  ? HomePage(logoutAction, email)
                   : Login(loginAction, errorMessage),
         ),
       ),
@@ -228,18 +232,119 @@ class Login extends StatelessWidget {
   }
 }
 
-class ChangeCalculatorPage extends StatefulWidget {
+class HomePage extends StatefulWidget {
   final Future<void> Function() logoutAction;
   final String? email;
 
-  const ChangeCalculatorPage(this.logoutAction, this.email, {Key? key})
-      : super(key: key);
+  const HomePage(this.logoutAction, this.email, {Key? key}) : super(key: key);
 
   @override
-  _ChangeCalculatorPageState createState() => _ChangeCalculatorPageState();
+  HomePageState createState() => HomePageState();
 }
 
-class _ChangeCalculatorPageState extends State<ChangeCalculatorPage> {
+class HomePageState extends State<HomePage> {
+  int _selectedIndex = 0;
+  late List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [AccountPage(email: widget.email), ChangeCalculatorPage()];
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        toolbarHeight: 100,
+        title: SvgPicture.asset(
+          'assets/example_bank_logo.svg',
+          width: 150,
+          height: 100,
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black),
+            onPressed: () async {
+              await widget.logoutAction();
+            },
+          ),
+        ],
+      ),
+      body: _pages[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_box),
+            label: 'Account',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.monetization_on_outlined),
+            label: 'Make Change',
+          ),
+        ],
+        selectedFontSize: 18.0,
+        unselectedFontSize: 18.0,
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+      ),
+    );
+  }
+}
+
+class AccountPage extends StatelessWidget {
+  final String? email;
+
+  const AccountPage({super.key, required this.email});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: SizedBox(
+        width: double.infinity,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Welcome: $email',
+              style: const TextStyle(fontSize: 20),
+            ),
+            const SizedBox(height: 50),
+            const Text(
+              'Your Balance',
+              style: TextStyle(fontSize: 24),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              '\$0.00',
+              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 32),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ChangeCalculatorPage extends StatefulWidget {
+
+  ChangeCalculatorPage({super.key});
+
+  @override
+  ChangeCalculatorPageState createState() => ChangeCalculatorPageState();
+}
+
+class ChangeCalculatorPageState extends State<ChangeCalculatorPage> {
   final TextEditingController _changeController = TextEditingController();
   String _result = 'We make change for \$0 with 0 nickels and 0 pennies!';
 
@@ -250,17 +355,10 @@ class _ChangeCalculatorPageState extends State<ChangeCalculatorPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          SvgPicture.asset(
-            'assets/example_bank_logo.svg',
-            width: 150,
-            height: 100,
-          ),
-          const SizedBox(height: 40),
-          Text('Welcome: ${widget.email}'),
           const SizedBox(height: 32),
           Text(
             _result,
-            style: const TextStyle(fontSize: 16),
+            style: const TextStyle(fontSize: 18),
           ),
           const SizedBox(height: 24),
           TextField(
@@ -294,21 +392,6 @@ class _ChangeCalculatorPageState extends State<ChangeCalculatorPage> {
             ],
           ),
           const SizedBox(height: 32),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () async {
-                    await widget.logoutAction();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF085b21),
-                  ),
-                  child: const Text('Logout'),
-                ),
-              ),
-            ],
-          )
         ],
       ),
     );
