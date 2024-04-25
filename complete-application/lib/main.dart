@@ -94,7 +94,7 @@ class MyAppState extends State<MyApp> {
           FUSIONAUTH_CLIENT_ID,
           FUSIONAUTH_REDIRECT_URI,
           issuer: FUSIONAUTH_ISSUER,
-          scopes: <String>['openid', 'offline_access'],
+          scopes: <String>['openid', 'email', 'profile', 'offline_access'],
         ),
       );
       if (result != null) {
